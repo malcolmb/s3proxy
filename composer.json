@@ -1,0 +1,20 @@
+{
+  "name": "malcolmb/s3proxy",
+  "description": "Simple PHP script for serving private S3 objects using basic authentication",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Malcolm Boyanton"
+    }
+  ],
+  "require": {
+    "aws/aws-sdk-php": "~2.8"
+  },
+  "autoload": {
+    "classmap": ["src/"],
+    "psr-0": {
+      "S3Proxy\\": "src/"
+    }
+  }
+}

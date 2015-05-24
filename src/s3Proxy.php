@@ -6,60 +6,75 @@
  * Time: 9:20 AM
  */
 
-namespace s3Proxy;
 
+namespace S3Proxy;
+require '../vendor/autoload.php';
+use Aws\Common\Aws;
 
-class s3Proxy {
+class S3Proxy
+{
 
-    public $bucket = 'services.spredfast.com';
-    public $prefix = 'test/';
+    public $bucket = '';
+    public $prefix = '';
     public $download = '';
     public $filename = '';
     protected $aws = '';
 
-    public function __construct(){
-        $this->aws = Aws::factory('../aws-credentials.php');
+    public function __construct()
+    {
 
+        //Load your credentials any way you want. I'm using a file outside of my webroot.
+        $this->aws = Aws::factory('../../aws-credentials.php');
+
+        //You can set this in the top of the class or use a simple return array() in a config file.
+        $config = include '../tmp/s3-config.php';
+        $this->bucket = $config['Bucket'];
+        $this->prefix = $config['Prefix'];
+
+        //Converting command line arguments to $_GET requests to make things easier.
         if (self::isCommandLineInterface()) {
             global $argv;
             foreach ($argv as $arg) {
                 $e = explode("=", $arg);
-                if (count($e) == 2)
+                if (count($e) == 2) {
                     $_GET[$e[0]] = $e[1];
-                else
+                } else {
                     $_GET[] = $e[0];
+                }
             }
         }
 
-        $this->filename = $_GET['file'];
+        //If there is file= in the request, download the file, else list contents of bucket.
+        if (isset($_GET['file'])) {
+            $this->filename = $_GET['file'];
+            $this->doDownload();
+        } else {
+            $this->getList();
+        }
 
     }
 
-    function isCommandLineInterface()
+    static function isCommandLineInterface()
     {
         return (php_sapi_name() === 'cli');
     }
 
-    function getRequest($argv)
+    /**
+     * Check if the file exists in S3.
+     * @return mixed
+     */
+    function checkExists()
     {
-        if (self::isCommandLineInterface()) {
-            $args = $argv;
-            $params = explode('=', $args[1]);
-            return $params[1];
-        } elseif(isset($_GET)){
-            return $_GET['file'];
-        }
-
-    }
-
-    function checkExists(){
         $file = $this->prefix . $this->filename;
         $s3 = $this->aws->get('s3');
         return $s3->doesObjectExist($this->bucket, $file);
-
     }
 
-    function getList(){
+    /**
+     * List the contents of the bucket/prefix and format the links for download.
+     */
+    function getList()
+    {
         $s3 = $this->aws->get('s3');
 
         $bucket = $this->bucket;
@@ -70,14 +85,18 @@ class s3Proxy {
             'Prefix' => $prefix
         ));
 
+        echo "<h3>List of available files for download:</h3>";
         foreach ($iterator as $object) {
-            $link = $s3->getObjectUrl($bucket, $object['Key']);
+            if ($object['Key'] != $this->prefix) {
+                $dl = substr($object['Key'], strlen($this->prefix));
+                echo "<a href='download.php?file=$dl'>$dl</a><br>";
+            }
         }
     }
 
     function doDownload()
     {
-        if(self::checkExists($this->filename)) {
+        if (self::checkExists($this->filename)) {
             $s3 = $this->aws->get('s3');
 
             $bucket = $this->bucket;
@@ -98,6 +117,7 @@ class s3Proxy {
 
         } else {
             header("HTTP/1.0 404 Not Found");
+            echo "File " . $this->filename . " not found";
         }
 
     }

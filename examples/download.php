@@ -6,7 +6,7 @@
  * Time: 11:37 AM
  */
 
-ini_set('display_errors',1);
+ini_set('display_errors', 1);
 require '../vendor/autoload.php';
 require_once 'auth.php';
 use S3Proxy\S3Proxy;
