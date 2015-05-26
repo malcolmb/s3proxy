@@ -58,8 +58,7 @@ class S3Proxy
             $bucket = $this->bucket;
             $prefix = $this->prefix;
             $file = $prefix . $filename;
-
-            $object = $s3->getObject(array('Bucket' => $bucket, 'Key' => $file));
+            
             $link = $s3->getObjectUrl($bucket, $file, '+5 minutes');
 
             header('Content-Description: File Transfer');
@@ -68,7 +67,6 @@ class S3Proxy
             header('Expires: 0');
             header('Cache-Control: must-revalidate');
             header('Pragma: public');
-            header('Content-Length: ' . $object['ContentLength']);
             readfile($link);
 
         } else {
