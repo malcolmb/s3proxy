@@ -27,7 +27,7 @@ if (!$_SESSION['Authorized'] == 'true'):
         <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
     <body>
-    <form action="/auth.php" method="post">
+    <form action="auth.php" method="post">
         <label for="username">Username</label>
         <input type="text" name="username" id="username"/>
         <label for="password">Password</label>

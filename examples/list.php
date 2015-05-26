@@ -12,9 +12,12 @@ $s3Proxy = new S3Proxy($credentials);
 
 $s3Proxy->bucket = $config['Bucket'];
 $s3Proxy->prefix = $config['Prefix'];
-
-if(isset($_GET)){
-    if($_GET['file']){
-        $s3Proxy->doDownload($_GET['file']);
-    }
+$objects = $s3Proxy->getList();
+?>
+<h3>Files for download</h3>
+<ul>
+<?php
+foreach($objects as $object){
+    echo "<li><a href='download.php/?file=$object'>$object</a></li>";
 }
+?>
