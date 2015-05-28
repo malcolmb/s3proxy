@@ -43,8 +43,8 @@ class S3Proxy
         $results = array();
         foreach ($iterator as $object) {
             if ($object['Key'] != $this->prefix) {
-                $file = substr($object['Key'], strlen($this->prefix));
-                $results[] = $file;
+                $object['Name'] = substr($object['Key'], strlen($this->prefix));
+                $results[] = $object;
             }
         }
         return $results;
@@ -58,7 +58,7 @@ class S3Proxy
             $bucket = $this->bucket;
             $prefix = $this->prefix;
             $file = $prefix . $filename;
-            
+
             $link = $s3->getObjectUrl($bucket, $file, '+5 minutes');
 
             header('Content-Description: File Transfer');
